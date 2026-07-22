@@ -11,15 +11,6 @@ terraform {
       version = "~> 3.5"
     }
   }
-
-  # Recommended backend setup for production (uncomment when S3+DynamoDB state backend is ready)
-  # backend "s3" {
-  #   bucket         = "pdfroar-tfstate-bucket"
-  #   key            = "prod/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   dynamodb_table = "pdfroar-tfstate-locks"
-  #   encrypt        = true
-  # }
 }
 
 provider "aws" {
@@ -35,7 +26,7 @@ provider "aws" {
   }
 }
 
-# --- Module: VPC ---
+# --- Module 1: VPC ---
 module "vpc" {
   source = "./modules/vpc"
 
@@ -50,7 +41,7 @@ module "vpc" {
   tags                 = var.tags
 }
 
-# --- Module: S3 ---
+# --- Module 2: S3 ---
 module "s3" {
   source = "./modules/s3"
 
@@ -58,4 +49,48 @@ module "s3" {
   environment               = var.environment
   temp_file_expiration_days = var.temp_file_expiration_days
   tags                      = var.tags
+}
+
+# --- Module 3: Security & IAM ---
+module "security" {
+  source = "./modules/security"
+
+  project_name          = var.project_name
+  environment           = var.environment
+  vpc_id                = module.vpc.vpc_id
+  originals_bucket_arn  = module.s3.originals_bucket_arn
+  temp_bucket_arn       = module.s3.temp_bucket_arn
+  allowed_ssh_cidrs     = var.allowed_ssh_cidrs
+  allowed_grafana_cidrs = var.allowed_ssh_cidrs
+  tags                  = var.tags
+}
+
+# --- Module 4: Bastion Host ---
+module "bastion" {
+  source = "./modules/bastion"
+
+  project_name          = var.project_name
+  environment           = var.environment
+  subnet_id             = module.vpc.public_subnet_ids[0]
+  security_group_id     = module.security.bastion_security_group_id
+  instance_profile_name = module.security.ec2_instance_profile_name
+  instance_type         = var.bastion_instance_type
+  ssh_key_name          = var.ssh_key_name
+  tags                  = var.tags
+}
+
+# --- Module 5: EC2 Compute (K3s Master + On-Demand PDF Worker) ---
+module "ec2" {
+  source = "./modules/ec2"
+
+  project_name             = var.project_name
+  environment              = var.environment
+  private_subnet_ids       = module.vpc.private_subnet_ids
+  k3s_security_group_id    = module.security.k3s_security_group_id
+  worker_security_group_id = module.security.worker_security_group_id
+  instance_profile_name    = module.security.ec2_instance_profile_name
+  k3s_instance_type        = var.k3s_instance_type
+  worker_instance_type     = var.worker_instance_type
+  ssh_key_name             = var.ssh_key_name
+  tags                     = var.tags
 }

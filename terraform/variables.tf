@@ -52,6 +52,36 @@ variable "temp_file_expiration_days" {
   default     = 1
 }
 
+variable "ssh_key_name" {
+  description = "AWS Key Pair Name for SSH access"
+  type        = string
+  default     = ""
+}
+
+variable "bastion_instance_type" {
+  description = "Instance type for Bastion Host & LGTM"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "k3s_instance_type" {
+  description = "Instance type for K3s Master Node"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "worker_instance_type" {
+  description = "Instance type for On-Demand PDF Worker"
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "allowed_ssh_cidrs" {
+  description = "Allowed CIDRs for SSH access to Bastion Host"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
 variable "tags" {
   description = "Global tags to apply to all resources"
   type        = map(string)
