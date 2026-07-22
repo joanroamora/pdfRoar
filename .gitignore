@@ -1,0 +1,21 @@
+# Terraform gitignore
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Environment variables & secrets
+*.tfvars
+!.tfvars.example
+secrets.tfvars
+
+# System files
+.DS_Store
+*.log
