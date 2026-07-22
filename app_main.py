@@ -37,6 +37,7 @@ def update_last_activity():
 
 
 @app.get("/health")
+@app.get("/api/health")
 def health_check():
     update_last_activity()
     return {"status": "ok", "service": "pdfRoar-unified-backend"}
