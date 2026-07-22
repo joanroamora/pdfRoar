@@ -48,7 +48,8 @@ function setupPdf4QtFrame() {
   if (!iframe) return;
 
   const currentHost = window.location.hostname;
-  const noVncUrl = `http://${currentHost}:6080/vnc.html?autoconnect=true&resize=scale`;
+  const portSuffix = window.location.port ? `:${window.location.port}` : '';
+  const noVncUrl = `${window.location.protocol}//${currentHost}${portSuffix}/novnc/vnc.html?autoconnect=true&resize=scale`;
 
   if (!iframe.src || iframe.src === 'about:blank' || iframe.src.includes('127.0.0.1')) {
     iframe.src = noVncUrl;

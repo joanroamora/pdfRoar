@@ -57,19 +57,21 @@ resource "aws_instance" "this" {
               rm -rf /var/www/html/*
 
               # Setup noVNC index
+              # Setup noVNC index
               ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
 
               # Start Xvfb, Fluxbox, x11vnc and websockify on port 6080
-              Xvfb :1 -screen 0 1600x900x24 &
-              sleep 1
+              export DISPLAY=:1
+              Xvfb :1 -screen 0 1920x1080x24 &
+              sleep 2
               DISPLAY=:1 fluxbox &
               sleep 1
-              DISPLAY=:1 xsetroot -solid "#1a1d29" || true
-              DISPLAY=:1 xterm -geometry 120x35+50+50 -bg "#090a0f" -fg "#06b6d4" -title "PDF4QT Native Qt6 Studio Workspace" &
+              DISPLAY=:1 xsetroot -solid "#090a0f" || true
+              DISPLAY=:1 xterm -geometry 140x45+80+40 -bg "#12141d" -fg "#06b6d4" -title "pdfRoar PDF4QT Qt6 Studio Workspace" -e "echo 'pdfRoar PDF4QT Qt6 Studio Active'; bash" &
               sleep 1
-              x11vnc -display :1 -nopw -listen localhost -xkb -noshm -forever &
+              x11vnc -display :1 -rfbport 5900 -nopw -shared -forever -bg -o /var/log/x11vnc.log || true
               sleep 1
-              websockify --web /usr/share/novnc 6080 localhost:5900 &
+              nohup websockify --web /usr/share/novnc 6080 127.0.0.1:5900 > /var/log/websockify.log 2>&1 &
 
               # Install Python PDF & DOCX processing dependencies synchronously
               pip3 install --upgrade pip
@@ -134,8 +136,16 @@ resource "aws_instance" "this" {
                       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                   }
 
+                  location /novnc/ {
+                      proxy_pass http://127.0.0.1:6080/;
+                      proxy_http_version 1.1;
+                      proxy_set_header Upgrade $http_upgrade;
+                      proxy_set_header Connection "Upgrade";
+                      proxy_set_header Host $host;
+                  }
+
                   location /websockify {
-                      proxy_pass http://127.0.0.1:6080;
+                      proxy_pass http://127.0.0.1:6080/websockify;
                       proxy_http_version 1.1;
                       proxy_set_header Upgrade $http_upgrade;
                       proxy_set_header Connection "Upgrade";
