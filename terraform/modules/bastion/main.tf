@@ -85,7 +85,7 @@ resource "aws_instance" "this" {
               cd /tmp/pdfRoar
               nohup uvicorn app_main:app --host 0.0.0.0 --port 8000 > /var/log/pdfroar-backend.log 2>&1 &
 
-              # Create dedicated pdfRoar Nginx site config
+              # Create dedicated pdfRoar Nginx site config with anti-cache headers
               cat << 'NGINX_CONF' > /etc/nginx/conf.d/pdfroar.conf
               server {
                   listen 80 default_server;
@@ -95,6 +95,10 @@ resource "aws_instance" "this" {
                   index index.html;
 
                   client_max_body_size 100M;
+
+                  # Prevent browser cache of default pages
+                  add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+                  expires -1;
 
                   location / {
                       try_files $uri $uri/ /index.html;
@@ -118,7 +122,7 @@ resource "aws_instance" "this" {
               NGINX_CONF
 
               systemctl restart nginx
-              echo "pdfRoar Full Stack & DOCX Engine Verified Active" > /var/log/bastion-bootstrap.log
+              echo "pdfRoar Full Stack & Anti-Cache Active" > /var/log/bastion-bootstrap.log
               EOF
 
   user_data_replace_on_change = true
