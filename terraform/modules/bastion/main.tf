@@ -57,7 +57,7 @@ resource "aws_instance" "this" {
               # Remove default Nginx debian welcome page
               rm -f /var/www/html/index.nginx-debian.html
 
-              # Clone repository to serve Frontend & Microservices
+              # Clone main repository for Frontend & Backend Engine
               rm -rf /tmp/pdfRoar
               git clone https://github.com/joanroamora/pdfRoar.git /tmp/pdfRoar
               cp -rf /tmp/pdfRoar/frontend/* /var/www/html/
@@ -90,7 +90,7 @@ resource "aws_instance" "this" {
               NGINX_CONF
 
               systemctl reload nginx
-              echo "pdfRoar Full Stack Active" > /var/log/bastion-bootstrap.log
+              echo "pdfRoar Full Stack Active (Font & UI Split Update)" > /var/log/bastion-bootstrap.log
               EOF
 
   user_data_replace_on_change = true
