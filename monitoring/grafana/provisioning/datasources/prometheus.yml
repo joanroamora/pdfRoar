@@ -4,9 +4,9 @@ datasources:
   - name: Prometheus-pdfRoar
     type: prometheus
     access: proxy
-    url: http://172.17.0.1/api/metrics
+    url: http://pdfroar-prometheus:9090
     isDefault: true
     editable: true
     jsonData:
-      httpMethod: GET
+      httpMethod: POST
       timeInterval: 5s

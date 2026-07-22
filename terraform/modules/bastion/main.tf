@@ -81,8 +81,21 @@ resource "aws_instance" "this" {
               cp -rf /tmp/pdfRoar/frontend/* /var/www/html/
               chmod -R 755 /var/www/html
 
-              # Launch Grafana Dashboard Container with Auto-Provisioned Datasource & Dashboard
+              # Create shared Docker network for Observability LGTM Stack
+              docker network create pdfroar-net || true
+
+              # Launch Prometheus TSDB Metrics Scraper Engine on Port 9090
+              docker run -d --name pdfroar-prometheus \
+                --network pdfroar-net \
+                -p 9090:9090 \
+                -v /tmp/pdfRoar/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
+                --add-host=host.docker.internal:host-gateway \
+                --restart unless-stopped \
+                prom/prometheus:latest || true
+
+              # Launch Grafana Visualizer Container on Port 3000
               docker run -d --name pdfroar-grafana \
+                --network pdfroar-net \
                 -p 3000:3000 \
                 -e "GF_SECURITY_ADMIN_PASSWORD=admin" \
                 -e "GF_USERS_ALLOW_SIGN_UP=false" \
