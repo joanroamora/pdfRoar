@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>pdfRoar — Professional Cloud-Native PDF Platform</title>
-  <meta name="description" content="Ultra-fast PDF merging, splitting, clean text extraction, and Acrobat-style coordinate editing on AWS.">
+  <meta name="description" content="Ultra-fast PDF merging, splitting, clean text extraction, and Word/Acrobat-style WYSIWYG interactive editor.">
   
   <!-- CSS -->
   <link rel="stylesheet" href="css/styles.css">
@@ -53,7 +53,7 @@
   <main>
     <section class="hero">
       <h1 data-i18n="title">pdfRoar — Professional Cloud-Native PDF Platform</h1>
-      <p data-i18n="subtitle">Ultra-fast PDF merging, splitting, clean text extraction, and Acrobat-style inline editing.</p>
+      <p data-i18n="subtitle">Ultra-fast PDF merging, splitting, clean text extraction, and Word/Acrobat-style WYSIWYG interactive editor.</p>
     </section>
 
     <!-- Navigation Tabs (Apple Style) -->
@@ -69,7 +69,7 @@
         </button>
         <button class="tab-btn" data-tab="tab-editor">
           <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-          <span data-i18n="tab_editor">Acrobat Coordinate Editor</span>
+          <span data-i18n="tab_editor">Word/Acrobat Interactive Editor</span>
         </button>
       </div>
     </div>
@@ -103,7 +103,7 @@
           </div>
         </div>
 
-        <div style="margin-top: 1.75rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
           <button class="btn-primary" id="btn-merge-action">
             <span data-i18n="btn_merge">Merge PDFs</span>
           </button>
@@ -129,7 +129,7 @@
           <input type="file" id="input-text-file" accept=".pdf" style="display: none;">
         </div>
 
-        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+        <div style="margin-top: 1.25rem; display: flex; gap: 1rem; align-items: center;">
           <button class="btn-primary" id="btn-totext-action">
             <span data-i18n="btn_totext">Extract Clean Text</span>
           </button>
@@ -138,57 +138,61 @@
           </button>
         </div>
 
-        <div style="margin-top: 1.5rem;">
+        <div style="margin-top: 1.25rem;">
           <div class="text-output-box" id="text-output-display">Extracted clean text will appear here...</div>
         </div>
       </div>
     </section>
 
-    <!-- TAB 3: Acrobat Coordinate Editor -->
+    <!-- TAB 3: Word/Acrobat Interactive WYSIWYG Editor -->
     <section id="tab-editor" class="tab-content">
       <div class="glass-card">
-        <div class="worker-indicator">
-          <div>
-            <strong data-i18n="worker_status">PDF Worker Engine Status:</strong>
-            <span style="color: var(--accent-cyan);" data-i18n="worker_idle">On-Demand (Idle / Auto-Sleep Enabled)</span>
-          </div>
-          <span style="font-size: 0.75rem; color: var(--text-dim);">AWS Auto-Wake Enabled via Boto3</span>
-        </div>
-
-        <div class="dropzone" id="dropzone-editor" style="margin-top: 1.25rem;">
+        <div class="dropzone" id="dropzone-editor">
           <div class="dropzone-icon">
             <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
           </div>
-          <h3 data-i18n="dropzone_title">Select PDF for Acrobat Coordinate Inspection & Replacement</h3>
+          <h3 data-i18n="dropzone_title">Select PDF to Edit Inline Like Word / Acrobat</h3>
           <p id="selected-editor-filename" style="color: var(--accent-cyan); font-weight: 500;"></p>
           <input type="file" id="input-editor-file" accept=".pdf" style="display: none;">
         </div>
 
-        <div class="editor-layout">
-          <!-- Live Canvas -->
-          <div class="canvas-container">
-            <canvas id="pdf-canvas"></canvas>
+        <!-- Word/Acrobat Toolbar -->
+        <div class="editor-toolbar" style="margin-top: 1.25rem;">
+          <div class="toolbar-group">
+            <select class="tool-select" id="tool-font-family" title="Font Family">
+              <option value="Plus Jakarta Sans, sans-serif">Plus Jakarta Sans</option>
+              <option value="Outfit, sans-serif">Outfit</option>
+              <option value="Arial, sans-serif">Arial / Helvetica</option>
+              <option value="Times New Roman, serif">Times New Roman</option>
+              <option value="Courier New, monospace">Courier New</option>
+            </select>
+
+            <input type="number" class="tool-input" id="tool-font-size" value="14" min="8" max="72" style="width: 60px;" title="Font Size (px)">
           </div>
 
-          <!-- Controls Sidebar -->
-          <div class="editor-sidebar">
-            <button class="btn-secondary" id="btn-inspect-blocks">
-              <span data-i18n="btn_extract_blocks">Inspect Coordinates & Blocks</span>
+          <div class="toolbar-group">
+            <button class="tool-btn" id="tool-btn-bold" title="Bold"><b>B</b></button>
+            <button class="tool-btn" id="tool-btn-italic" title="Italic"><i>I</i></button>
+            <input type="color" id="tool-text-color" value="#000000" style="width: 32px; height: 32px; border: none; cursor: pointer; background: none;" title="Text Color">
+          </div>
+
+          <div class="toolbar-group">
+            <button class="tool-btn" id="tool-btn-add-text" data-i18n="tool_add_text">+ Add Text</button>
+            <button class="tool-btn" id="tool-btn-redact" data-i18n="tool_redact">Redact Mask</button>
+          </div>
+
+          <div style="margin-left: auto; display: flex; align-items: center; gap: 1rem;">
+            <span id="page-indicator" style="font-size: 0.825rem; color: var(--text-muted);">Page 1 / 1</span>
+            <button class="btn-primary" id="btn-export-edited-pdf" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;">
+              <span data-i18n="btn_export_pdf">Save & Download Modified PDF</span>
             </button>
+          </div>
+        </div>
 
-            <div class="input-group">
-              <label data-i18n="target_text">Text to Find</label>
-              <input type="text" id="editor-search-text" class="input-control" placeholder="Target word or phrase">
-            </div>
-
-            <div class="input-group">
-              <label data-i18n="replacement_text">Replacement Text</label>
-              <input type="text" id="editor-replace-text" class="input-control" placeholder="New text value">
-            </div>
-
-            <button class="btn-primary" id="btn-replace-action" style="margin-top: 0.5rem;">
-              <span data-i18n="btn_replace_text">Apply Replace & Save PDF</span>
-            </button>
+        <!-- Interactive WYSIWYG Workspace -->
+        <div class="pdf-editor-workspace">
+          <div id="canvas-wrapper" class="canvas-wrapper">
+            <p style="color: var(--text-dim); text-align: center; margin-top: 5rem;">Load a PDF document above to start editing text inline like Word/Acrobat...</p>
           </div>
         </div>
       </div>

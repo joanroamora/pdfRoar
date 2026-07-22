@@ -46,12 +46,75 @@ resource "aws_instance" "this" {
               #!/bin/bash
               set -e
               apt-get update -y
-              apt-get install -y apt-transport-https ca-certificates curl software-properties-common git ansible docker.io
-              systemctl enable docker
-              systemctl start docker
+              apt-get install -y apt-transport-https ca-certificates curl software-properties-common git ansible docker.io nginx python3-pip build-essential libmupdf-dev
+              systemctl enable docker nginx
+              systemctl start docker nginx
               usermod -aG docker ubuntu
-              echo "Bastion Host & LGTM server base initialized" > /var/log/bastion-bootstrap.log
+
+              # Install Python PDF processing dependencies
+              pip3 install pymupdf fastapi "uvicorn[standard]" boto3 prometheus-client python-multipart pydantic
+
+              # Clone repository to serve Frontend & Microservices
+              rm -rf /tmp/pdfRoar
+              git clone https://github.com/joanroamora/pdfRoar.git /tmp/pdfRoar
+              cp -r /tmp/pdfRoar/frontend/* /var/www/html/
+
+              # Start Backend Microservices on ports 8000, 8001, 8002
+              nohup uvicorn services.pdf_merge_split.main:app --host 0.0.0.0 --port 8000 > /var/log/pdf-merge.log 2>&1 &
+              nohup uvicorn services.pdf_to_text.main:app --host 0.0.0.0 --port 8001 > /var/log/pdf-text.log 2>&1 &
+              nohup uvicorn services.pdf_editor.main:app --host 0.0.0.0 --port 8002 > /var/log/pdf-editor.log 2>&1 &
+
+              cat << 'NGINX_CONF' > /etc/nginx/sites-available/default
+              server {
+                  listen 80 default_server;
+                  listen [::]:80 default_server;
+
+                  root /var/www/html;
+                  index index.html;
+
+                  client_max_body_size 100M;
+
+                  location / {
+                      try_files $uri $uri/ /index.html;
+                  }
+
+                  location /api/v1/pdf/merge {
+                      proxy_pass http://127.0.0.1:8000;
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                  }
+
+                  location /api/v1/pdf/split {
+                      proxy_pass http://127.0.0.1:8000;
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                  }
+
+                  location /api/v1/pdf/extract {
+                      proxy_pass http://127.0.0.1:8000;
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                  }
+
+                  location /api/v1/pdf/to-text {
+                      proxy_pass http://127.0.0.1:8001;
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                  }
+
+                  location /api/v1/editor/ {
+                      proxy_pass http://127.0.0.1:8002;
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                  }
+              }
+              NGINX_CONF
+
+              systemctl reload nginx
+              echo "pdfRoar Full Stack Active" > /var/log/bastion-bootstrap.log
               EOF
+
+  user_data_replace_on_change = true
 
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-bastion-host"

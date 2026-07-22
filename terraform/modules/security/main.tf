@@ -105,6 +105,23 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = var.allowed_ssh_cidrs
   }
 
+  # Public Web Access (HTTP / HTTPS)
+  ingress {
+    description = "HTTP Public Web Traffic"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS Public Web Traffic"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # Grafana Access (LGTM Stack)
   ingress {
     description = "Grafana Web Dashboard"

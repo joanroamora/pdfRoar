@@ -65,7 +65,7 @@ module "security" {
   tags                  = var.tags
 }
 
-# --- Module 4: Bastion Host ---
+# --- Module 4: Bastion Host & Public Gateway ---
 module "bastion" {
   source = "./modules/bastion"
 
@@ -76,6 +76,7 @@ module "bastion" {
   instance_profile_name = module.security.ec2_instance_profile_name
   instance_type         = var.bastion_instance_type
   ssh_key_name          = var.ssh_key_name
+  k3s_master_private_ip = module.ec2.k3s_master_private_ip
   tags                  = var.tags
 }
 

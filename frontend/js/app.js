@@ -1,5 +1,5 @@
 /* ==========================================================================
-   pdfRoar - Main Application Controller & UI Logic
+   pdfRoar - Main Application Controller & Word/Acrobat Editor UI Binders
    ========================================================================== */
 
 let selectedFilesMerge = [];
@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupMergeDropzone();
   setupTextDropzone();
   setupEditorDropzone();
+  setupEditorToolbar();
   setupActionListeners();
 });
 
@@ -76,6 +77,58 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
+/* Word/Acrobat-Style Editor Toolbar Controls */
+function setupEditorToolbar() {
+  const fontSelect = document.getElementById('tool-font-family');
+  const sizeInput = document.getElementById('tool-font-size');
+  const colorInput = document.getElementById('tool-text-color');
+  const btnBold = document.getElementById('tool-btn-bold');
+  const btnItalic = document.getElementById('tool-btn-italic');
+  const btnAddText = document.getElementById('tool-btn-add-text');
+  const btnRedact = document.getElementById('tool-btn-redact');
+
+  fontSelect?.addEventListener('change', (e) => {
+    if (activeTextNode) activeTextNode.style.fontFamily = e.target.value;
+  });
+
+  sizeInput?.addEventListener('input', (e) => {
+    if (activeTextNode) activeTextNode.style.fontSize = `${e.target.value}px`;
+  });
+
+  colorInput?.addEventListener('input', (e) => {
+    if (activeTextNode) activeTextNode.style.color = e.target.value;
+  });
+
+  btnBold?.addEventListener('click', () => {
+    if (activeTextNode) {
+      const isBold = activeTextNode.style.fontWeight === 'bold';
+      activeTextNode.style.fontWeight = isBold ? 'normal' : 'bold';
+      btnBold.classList.toggle('active', !isBold);
+    }
+  });
+
+  btnItalic?.addEventListener('click', () => {
+    if (activeTextNode) {
+      const isItalic = activeTextNode.style.fontStyle === 'italic';
+      activeTextNode.style.fontStyle = isItalic ? 'normal' : 'italic';
+      btnItalic.classList.toggle('active', !isItalic);
+    }
+  });
+
+  btnAddText?.addEventListener('click', () => {
+    addNewTextNode();
+    showToast('New editable text frame inserted on PDF page!', 'info');
+  });
+
+  btnRedact?.addEventListener('click', () => {
+    if (activeTextNode) {
+      activeTextNode.style.background = '#000000';
+      activeTextNode.style.color = '#000000';
+      showToast('Selected text redacted (masked)', 'info');
+    }
+  });
+}
+
 /* 1. Merge & Split Dropzone */
 function setupMergeDropzone() {
   const dropzone = document.getElementById('dropzone-merge');
@@ -85,7 +138,6 @@ function setupMergeDropzone() {
   if (!dropzone || !fileInput) return;
 
   dropzone.addEventListener('click', () => fileInput.click());
-
   dropzone.addEventListener('dragover', (e) => {
     e.preventDefault();
     dropzone.classList.add('dragover');
@@ -156,7 +208,7 @@ function setupTextDropzone() {
   });
 }
 
-/* 3. Acrobat Editor Dropzone */
+/* 3. Acrobat/Word Editor Dropzone */
 function setupEditorDropzone() {
   const dropzone = document.getElementById('dropzone-editor');
   const fileInput = document.getElementById('input-editor-file');
@@ -169,8 +221,8 @@ function setupEditorDropzone() {
     if (e.target.files.length > 0) {
       selectedFileEditor = e.target.files[0];
       nameLabel.textContent = `Selected: ${selectedFileEditor.name}`;
-      showToast('Loading PDF canvas preview...', 'info');
-      await loadPdfPreview(selectedFileEditor, 'pdf-canvas');
+      showToast('Loading interactive PDF canvas editor...', 'info');
+      await loadPdfPreview(selectedFileEditor, 'canvas-wrapper');
     }
   });
 }
@@ -267,41 +319,29 @@ function setupActionListeners() {
     }
   });
 
-  /* Inspect Acrobat Coordinates Action */
-  document.getElementById('btn-inspect-blocks')?.addEventListener('click', async () => {
+  /* Export & Save Modified PDF Action */
+  document.getElementById('btn-export-edited-pdf')?.addEventListener('click', async () => {
     if (!selectedFileEditor) {
-      showToast('Please select a PDF file for the Acrobat editor.', 'error');
+      showToast('Please load a PDF to edit first.', 'error');
       return;
     }
-    try {
-      showToast('Waking PDF Worker & extracting bounding box coordinates...', 'info');
-      const blocksData = await extractEditorBlocksApi(selectedFileEditor);
-      setCoordinateBlocks(blocksData.pages);
-      showToast('Coordinate bounding boxes rendered on PDF canvas!', 'success');
-    } catch (err) {
-      showToast(err.message, 'error');
-    }
-  });
 
-  /* Replace Text Action */
-  document.getElementById('btn-replace-action')?.addEventListener('click', async () => {
-    if (!selectedFileEditor) {
-      showToast('Please select a PDF file for replacement.', 'error');
-      return;
-    }
-    const searchText = document.getElementById('editor-search-text').value;
-    const replaceText = document.getElementById('editor-replace-text').value;
-
-    if (!searchText) {
-      showToast('Please enter target text to replace.', 'error');
+    // Collect modified text nodes
+    const modifiedNodes = document.querySelectorAll('.editable-text-node[data-modified="true"]');
+    if (modifiedNodes.length === 0) {
+      showToast('No text modifications detected yet. Edit text on the canvas to save!', 'info');
       return;
     }
 
     try {
-      showToast('Replacing text with Acrobat engine on PDF Worker...', 'info');
-      const blob = await replaceTextInPdfApi(selectedFileEditor, searchText, replaceText);
+      const firstModified = modifiedNodes[0];
+      const origText = firstModified.getAttribute('data-original-text');
+      const newText = firstModified.innerText;
+
+      showToast('Waking PDF Worker Engine & compiling modified PDF...', 'info');
+      const blob = await replaceTextInPdfApi(selectedFileEditor, origText, newText);
       downloadBlob(blob, 'pdfRoar_edited.pdf');
-      showToast('PDF edited and downloaded successfully!', 'success');
+      showToast('Modified PDF compiled and saved successfully!', 'success');
     } catch (err) {
       showToast(err.message, 'error');
     }

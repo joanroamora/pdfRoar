@@ -1,19 +1,17 @@
 /* ==========================================================================
-   pdfRoar - Fast Canvas PDF.js Previewer & Coordinate Overlay Engine
+   pdfRoar - Word/Acrobat-Style Interactive WYSIWYG PDF Editor Engine
    ========================================================================== */
 
 let pdfDoc = null;
 let currentPageNum = 1;
-let pageRendering = false;
-let pageNumPending = null;
-let scale = 1.2;
-let currentBlocks = [];
+let totalPages = 1;
+let scale = 1.25;
+let activeTextNode = null;
+let pageTextItems = [];
 
-async function loadPdfPreview(fileOrUrl, canvasId = 'pdf-canvas') {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-
-  const ctx = canvas.getContext('2d');
+async function loadPdfPreview(fileOrUrl, wrapperId = 'canvas-wrapper') {
+  const wrapper = document.getElementById(wrapperId);
+  if (!wrapper) return;
 
   try {
     let arrayBuffer;
@@ -26,71 +24,135 @@ async function loadPdfPreview(fileOrUrl, canvasId = 'pdf-canvas') {
 
     const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
     pdfDoc = await loadingTask.promise;
+    totalPages = pdfDoc.numPages;
     currentPageNum = 1;
-    renderPage(currentPageNum, canvas, ctx);
+
+    document.getElementById('page-indicator').textContent = `Page ${currentPageNum} / ${totalPages}`;
+    renderInteractivePage(currentPageNum, wrapper);
   } catch (err) {
-    console.error("PDF.js Render Error:", err);
+    console.error("PDF.js Editor Load Error:", err);
   }
 }
 
-async function renderPage(num, canvas, ctx) {
-  pageRendering = true;
-  const page = await pdfDoc.getPage(num);
+async function renderInteractivePage(pageNum, wrapper) {
+  wrapper.innerHTML = ''; // Clear previous canvas & text layer
 
+  const page = await pdfDoc.getPage(pageNum);
   const viewport = page.getViewport({ scale: scale });
-  canvas.height = viewport.height;
-  canvas.width = viewport.width;
 
+  // 1. Create Canvas Element
+  const canvas = document.createElement('canvas');
+  canvas.id = 'pdf-canvas';
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  wrapper.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
   const renderContext = {
     canvasContext: ctx,
     viewport: viewport
   };
+  await page.render(renderContext).promise;
 
-  const renderTask = page.render(renderContext);
-  await renderTask.promise;
+  // 2. Create Interactive WYSIWYG Text Overlay Layer
+  const textLayerDiv = document.createElement('div');
+  textLayerDiv.className = 'pdf-text-layer';
+  textLayerDiv.style.width = `${viewport.width}px`;
+  textLayerDiv.style.height = `${viewport.height}px`;
+  wrapper.appendChild(textLayerDiv);
 
-  pageRendering = false;
-  if (pageNumPending !== null) {
-    renderPage(pageNumPending, canvas, ctx);
-    pageNumPending = null;
-  }
+  // 3. Extract Text Content & Create Editable Text Nodes
+  const textContent = await page.getTextContent();
+  pageTextItems = textContent.items;
 
-  // If bounding box block coordinates exist for this page, overlay them
-  drawCoordinateOverlays(canvas, ctx, viewport);
+  textContent.items.forEach((item, index) => {
+    if (!item.str.trim()) return;
+
+    const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+    const fontHeight = Math.sqrt(tx[2] * tx[2] + tx[3] * tx[3]);
+
+    const node = document.createElement('div');
+    node.className = 'editable-text-node';
+    node.contentEditable = "true";
+    node.setAttribute('data-index', index);
+    node.setAttribute('data-original-text', item.str);
+    
+    // Position text node precisely over PDF canvas coordinates
+    node.style.left = `${tx[4]}px`;
+    node.style.top = `${tx[5] - fontHeight}px`;
+    node.style.fontSize = `${fontHeight}px`;
+    node.style.fontFamily = 'Plus Jakarta Sans, sans-serif';
+    node.innerText = item.str;
+
+    // Selection & Editing Event Listeners
+    node.addEventListener('focus', () => selectTextNode(node));
+    node.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectTextNode(node);
+    });
+
+    node.addEventListener('input', () => {
+      node.setAttribute('data-modified', 'true');
+    });
+
+    textLayerDiv.appendChild(node);
+  });
 }
 
-function drawCoordinateOverlays(canvas, ctx, viewport) {
-  if (!currentBlocks || currentBlocks.length === 0) return;
+function selectTextNode(node) {
+  if (activeTextNode) {
+    activeTextNode.classList.remove('selected');
+  }
+  activeTextNode = node;
+  activeTextNode.classList.add('selected');
 
-  const pageBlocks = currentBlocks.find(p => p.page === currentPageNum);
-  if (!pageBlocks || !pageBlocks.blocks) return;
+  // Update Toolbar controls to match selected node's current styling
+  const fontSelect = document.getElementById('tool-font-family');
+  const sizeInput = document.getElementById('tool-font-size');
+  const colorInput = document.getElementById('tool-text-color');
 
-  ctx.save();
-  ctx.strokeStyle = 'rgba(6, 182, 212, 0.8)';
-  ctx.lineWidth = 1.5;
-  ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
+  if (fontSelect && node.style.fontFamily) {
+    fontSelect.value = node.style.fontFamily.split(',')[0].replace(/['"]/g, '');
+  }
+  if (sizeInput && node.style.fontSize) {
+    sizeInput.value = parseInt(node.style.fontSize);
+  }
+  if (colorInput && node.style.color) {
+    colorInput.value = rgbToHex(node.style.color);
+  }
+}
 
-  pageBlocks.blocks.forEach(b => {
-    // bbox: [x0, y0, x1, y1]
-    const [x0, y0, x1, y1] = b.bbox;
-    // Scale coordinates to canvas viewport
-    const scaledX0 = x0 * scale;
-    const scaledY0 = y0 * scale;
-    const width = (x1 - x0) * scale;
-    const height = (y1 - y0) * scale;
+// Add New Editable Text Frame anywhere on PDF page
+function addNewTextNode() {
+  const textLayer = document.querySelector('.pdf-text-layer');
+  if (!textLayer) return;
 
-    ctx.fillRect(scaledX0, scaledY0, width, height);
-    ctx.strokeRect(scaledX0, scaledY0, width, height);
+  const node = document.createElement('div');
+  node.className = 'editable-text-node selected';
+  node.contentEditable = "true";
+  node.style.left = '100px';
+  node.style.top = '100px';
+  node.style.fontSize = '16px';
+  node.style.fontFamily = 'Outfit, sans-serif';
+  node.style.color = '#3b82f6';
+  node.innerText = 'New Edit Text Frame';
+  node.setAttribute('data-new', 'true');
+
+  node.addEventListener('focus', () => selectTextNode(node));
+  node.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectTextNode(node);
   });
 
-  ctx.restore();
+  textLayer.appendChild(node);
+  selectTextNode(node);
+  node.focus();
 }
 
-function setCoordinateBlocks(blocksData) {
-  currentBlocks = blocksData;
-  if (pdfDoc && document.getElementById('pdf-canvas')) {
-    const canvas = document.getElementById('pdf-canvas');
-    const ctx = canvas.getContext('2d');
-    renderPage(currentPageNum, canvas, ctx);
-  }
+// Helper: Convert RGB to HEX for color input picker
+function rgbToHex(rgb) {
+  if (!rgb || rgb.startsWith('#')) return rgb || '#000000';
+  const rgbValues = rgb.match(/\d+/g);
+  if (!rgbValues) return '#000000';
+  return "#" + ((1 << 24) + (parseInt(rgbValues[0]) << 16) + (parseInt(rgbValues[1]) << 8) + parseInt(rgbValues[2])).toString(16).slice(1);
 }

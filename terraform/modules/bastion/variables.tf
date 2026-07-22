@@ -37,6 +37,12 @@ variable "ssh_key_name" {
   default     = ""
 }
 
+variable "k3s_master_private_ip" {
+  description = "Private IP of K3s Master for public HTTP reverse proxying"
+  type        = string
+  default     = "10.0.10.191"
+}
+
 variable "tags" {
   description = "Resource tags"
   type        = map(string)
