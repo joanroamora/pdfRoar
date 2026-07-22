@@ -54,15 +54,17 @@ resource "aws_instance" "this" {
               # Install Python PDF processing dependencies
               pip3 install pymupdf fastapi "uvicorn[standard]" boto3 prometheus-client python-multipart pydantic
 
+              # Remove default Nginx debian welcome page
+              rm -f /var/www/html/index.nginx-debian.html
+
               # Clone repository to serve Frontend & Microservices
               rm -rf /tmp/pdfRoar
               git clone https://github.com/joanroamora/pdfRoar.git /tmp/pdfRoar
-              cp -r /tmp/pdfRoar/frontend/* /var/www/html/
+              cp -rf /tmp/pdfRoar/frontend/* /var/www/html/
 
-              # Start Backend Microservices on ports 8000, 8001, 8002
-              nohup uvicorn services.pdf_merge_split.main:app --host 0.0.0.0 --port 8000 > /var/log/pdf-merge.log 2>&1 &
-              nohup uvicorn services.pdf_to_text.main:app --host 0.0.0.0 --port 8001 > /var/log/pdf-text.log 2>&1 &
-              nohup uvicorn services.pdf_editor.main:app --host 0.0.0.0 --port 8002 > /var/log/pdf-editor.log 2>&1 &
+              # Start Consolidated Backend Engine on port 8000
+              cd /tmp/pdfRoar
+              nohup uvicorn app_main:app --host 0.0.0.0 --port 8000 > /var/log/pdfroar-backend.log 2>&1 &
 
               cat << 'NGINX_CONF' > /etc/nginx/sites-available/default
               server {
@@ -78,34 +80,11 @@ resource "aws_instance" "this" {
                       try_files $uri $uri/ /index.html;
                   }
 
-                  location /api/v1/pdf/merge {
+                  location /api/ {
                       proxy_pass http://127.0.0.1:8000;
                       proxy_set_header Host $host;
                       proxy_set_header X-Real-IP $remote_addr;
-                  }
-
-                  location /api/v1/pdf/split {
-                      proxy_pass http://127.0.0.1:8000;
-                      proxy_set_header Host $host;
-                      proxy_set_header X-Real-IP $remote_addr;
-                  }
-
-                  location /api/v1/pdf/extract {
-                      proxy_pass http://127.0.0.1:8000;
-                      proxy_set_header Host $host;
-                      proxy_set_header X-Real-IP $remote_addr;
-                  }
-
-                  location /api/v1/pdf/to-text {
-                      proxy_pass http://127.0.0.1:8001;
-                      proxy_set_header Host $host;
-                      proxy_set_header X-Real-IP $remote_addr;
-                  }
-
-                  location /api/v1/editor/ {
-                      proxy_pass http://127.0.0.1:8002;
-                      proxy_set_header Host $host;
-                      proxy_set_header X-Real-IP $remote_addr;
+                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                   }
               }
               NGINX_CONF

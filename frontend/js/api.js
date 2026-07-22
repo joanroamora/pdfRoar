@@ -1,8 +1,27 @@
 /* ==========================================================================
-   pdfRoar - API Gateway Client Wrapper
+   pdfRoar - API Gateway Client Wrapper (With Safe Response Parsing)
    ========================================================================== */
 
 const API_BASE = '/api/v1';
+
+async function handleApiResponse(response, defaultErrorMsg) {
+  if (!response.ok) {
+    let errorDetail = defaultErrorMsg;
+    try {
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const json = await response.json();
+        errorDetail = json.detail || defaultErrorMsg;
+      } else {
+        const text = await response.text();
+        errorDetail = text.substring(0, 100) || defaultErrorMsg;
+      }
+    } catch (e) {
+      errorDetail = `Server Error (${response.status})`;
+    }
+    throw new Error(errorDetail);
+  }
+}
 
 async function mergePdfsApi(files) {
   const formData = new FormData();
@@ -13,11 +32,7 @@ async function mergePdfsApi(files) {
     body: formData
   });
 
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || 'Failed to merge PDFs');
-  }
-
+  await handleApiResponse(response, 'Failed to merge PDFs');
   return await response.blob();
 }
 
@@ -32,11 +47,7 @@ async function splitPdfApi(file, startPage, endPage) {
     body: formData
   });
 
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || 'Failed to split PDF');
-  }
-
+  await handleApiResponse(response, 'Failed to split PDF');
   return await response.blob();
 }
 
@@ -50,11 +61,7 @@ async function extractPagesApi(file, pagesStr) {
     body: formData
   });
 
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || 'Failed to extract pages');
-  }
-
+  await handleApiResponse(response, 'Failed to extract pages');
   return await response.blob();
 }
 
@@ -68,10 +75,7 @@ async function pdfToTextApi(file, formatOutput = 'json') {
     body: formData
   });
 
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || 'Failed to extract text');
-  }
+  await handleApiResponse(response, 'Failed to extract text');
 
   if (formatOutput === 'txt') {
     return await response.text();
@@ -88,11 +92,7 @@ async function extractEditorBlocksApi(file) {
     body: formData
   });
 
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || 'Failed to extract Acrobat coordinate blocks');
-  }
-
+  await handleApiResponse(response, 'Failed to extract Acrobat coordinate blocks');
   return await response.json();
 }
 
@@ -107,10 +107,6 @@ async function replaceTextInPdfApi(file, searchText, replaceText) {
     body: formData
   });
 
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || 'Failed to replace text in PDF');
-  }
-
+  await handleApiResponse(response, 'Failed to replace text in PDF');
   return await response.blob();
 }
