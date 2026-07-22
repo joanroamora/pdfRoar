@@ -131,6 +131,15 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = var.allowed_grafana_cidrs
   }
 
+  # PDF4QT Native Web Studio noVNC Stream
+  ingress {
+    description = "PDF4QT Native Web Studio noVNC Stream"
+    from_port   = 6080
+    to_port     = 6080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # Prometheus / Loki / Tempo internal ports if needed
   ingress {
     description = "Prometheus Server"
