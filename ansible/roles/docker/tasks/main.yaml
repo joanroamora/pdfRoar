@@ -1,0 +1,19 @@
+---
+- name: Ensure Docker and prerequisites are installed
+  apt:
+    name:
+      - docker.io
+      - docker-compose-v2
+    state: present
+
+- name: Enable and start Docker service
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: Add user ubuntu to docker group
+  user:
+    name: ubuntu
+    groups: docker
+    append: yes

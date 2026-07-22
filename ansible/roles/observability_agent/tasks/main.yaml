@@ -1,0 +1,45 @@
+---
+- name: Download Prometheus Node Exporter binary
+  get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz"
+    dest: "/tmp/node_exporter.tar.gz"
+    mode: '0644'
+
+- name: Extract Node Exporter binary
+  unarchive:
+    src: "/tmp/node_exporter.tar.gz"
+    dest: "/tmp"
+    remote_src: yes
+
+- name: Move Node Exporter binary to /usr/local/bin
+  copy:
+    src: "/tmp/node_exporter-1.8.1.linux-amd64/node_exporter"
+    dest: "/usr/local/bin/node_exporter"
+    remote_src: yes
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create Systemd service for Node Exporter
+  copy:
+    dest: "/etc/systemd/system/node_exporter.service"
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Prometheus Node Exporter
+      After=network.target
+
+      [Service]
+      User=nobody
+      ExecStart=/usr/local/bin/node_exporter
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Enable and start Node Exporter service
+  systemd:
+    name: node_exporter
+    enabled: yes
+    state: started

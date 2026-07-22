@@ -1,0 +1,58 @@
+---
+- name: Install Python PDF processing system dependencies
+  apt:
+    name:
+      - python3-venv
+      - python3-dev
+      - build-essential
+      - libmupdf-dev
+    state: present
+
+- name: Create Python virtual environment for PDF Worker
+  command: python3 -m venv /opt/pdfroar/venv
+  args:
+    creates: /opt/pdfroar/venv
+
+- name: Install PyMuPDF, FastAPI, and Cloud dependencies inside venv
+  pip:
+    virtualenv: /opt/pdfroar/venv
+    name:
+      - pymupdf
+      - fastapi
+      - uvicorn[standard]
+      - boto3
+      - pydantic
+      - prometheus-client
+      - opentelemetry-api
+      - opentelemetry-sdk
+      - opentelemetry-exporter-otlp
+
+- name: Create idle auto-shutdown script for cost optimization
+  copy:
+    dest: /usr/local/bin/check-idle-shutdown.sh
+    owner: root
+    group: root
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      # Auto-stop instance if no PDF processing requests received in the last 15 minutes
+      IDLE_FILE="/tmp/last_pdf_request_timestamp"
+      NOW=$(date +%s)
+      
+      if [ -f "$IDLE_FILE" ]; then
+        LAST_REQ=$(cat "$IDLE_FILE")
+        DIFF=$((NOW - LAST_REQ))
+        # 900 seconds = 15 minutes
+        if [ $DIFF -gt 900 ]; then
+          echo "[$(date)] Idle threshold reached ($DIFF sec). Shutting down EC2 worker..." >> /var/log/idle-shutdown.log
+          sudo shutdown -h now
+        fi
+      else
+        date +%s > "$IDLE_FILE"
+      fi
+
+- name: Setup Cron job for idle shutdown check every 5 minutes
+  cron:
+    name: "Check PDF worker idle shutdown"
+    minute: "*/5"
+    job: "/usr/local/bin/check-idle-shutdown.sh > /dev/null 2>&1"

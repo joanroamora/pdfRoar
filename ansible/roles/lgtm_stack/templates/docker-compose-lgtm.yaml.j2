@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: pdfroar-prometheus
+    restart: always
+    volumes:
+      - /opt/lgtm/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: pdfroar-loki
+    restart: always
+    volumes:
+      - /opt/lgtm/loki/loki.yaml:/etc/loki/loki.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/loki.yaml
+    ports:
+      - "3100:3100"
+
+  tempo:
+    image: grafana/tempo:2.4.0
+    container_name: pdfroar-tempo
+    restart: always
+    volumes:
+      - /opt/lgtm/tempo/tempo.yaml:/etc/tempo/tempo.yaml
+      - tempo_data:/var/tempo
+    command: -config.file=/etc/tempo/tempo.yaml
+    ports:
+      - "3200:3200"  # Tempo HTTP
+      - "4317:4317"  # OTLP gRPC
+      - "4318:4318"  # OTLP HTTP
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: pdfroar-grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=pdfroar_secure_lgtm_2026
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  prometheus_data:
+  loki_data:
+  tempo_data:
+  grafana_data:

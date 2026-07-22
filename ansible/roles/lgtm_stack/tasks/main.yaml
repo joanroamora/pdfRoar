@@ -1,0 +1,42 @@
+---
+- name: Create directory structure for LGTM Stack
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+  loop:
+    - /opt/lgtm
+    - /opt/lgtm/prometheus
+    - /opt/lgtm/loki
+    - /opt/lgtm/tempo
+
+- name: Deploy Prometheus configuration
+  template:
+    src: prometheus.yaml.j2
+    dest: /opt/lgtm/prometheus/prometheus.yaml
+    mode: '0644'
+
+- name: Deploy Loki configuration
+  template:
+    src: loki.yaml.j2
+    dest: /opt/lgtm/loki/loki.yaml
+    mode: '0644'
+
+- name: Deploy Tempo configuration
+  template:
+    src: tempo.yaml.j2
+    dest: /opt/lgtm/tempo/tempo.yaml
+    mode: '0644'
+
+- name: Deploy Docker Compose file for LGTM Stack
+  template:
+    src: docker-compose-lgtm.yaml.j2
+    dest: /opt/lgtm/docker-compose.yaml
+    mode: '0644'
+
+- name: Launch LGTM Observability Stack via Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: /opt/lgtm
+    state: present

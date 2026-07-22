@@ -1,0 +1,13 @@
+# Global variables across all nodes
+project_name: pdfroar
+environment: prod
+
+# Bastion LGTM observabilty endpoints
+bastion_internal_ip: "10.0.1.10" # Will be updated dynamically or via inventory
+loki_push_url: "http://10.0.1.10:3100/loki/api/v1/push"
+prometheus_server_url: "http://10.0.1.10:9090"
+tempo_endpoint: "10.0.1.10:4317"
+
+# Observability Agent Versions
+node_exporter_version: "1.8.1"
+alloy_version: "v1.1.0"

@@ -1,0 +1,21 @@
+all:
+  children:
+    bastion:
+      hosts:
+        bastion-host:
+          ansible_host: 127.0.0.1  # When executed directly on Bastion Host
+          ansible_connection: local
+
+    k3s_cluster:
+      hosts:
+        k3s-master:
+          ansible_host: 10.0.10.15 # Private IP of K3s Master Node (from Terraform output)
+
+    pdf_worker:
+      hosts:
+        worker-node:
+          ansible_host: 10.0.20.25 # Private IP of PDF Worker Node (from Terraform output)
+
+  vars:
+    ansible_user: ubuntu
+    ansible_ssh_private_key_file: ~/.ssh/pdfroar-keypair.pem
