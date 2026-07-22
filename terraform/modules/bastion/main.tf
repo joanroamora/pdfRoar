@@ -81,6 +81,16 @@ resource "aws_instance" "this" {
               cp -rf /tmp/pdfRoar/frontend/* /var/www/html/
               chmod -R 755 /var/www/html
 
+              # Launch Grafana Dashboard Container with Auto-Provisioned Datasource & Dashboard
+              docker run -d --name pdfroar-grafana \
+                -p 3000:3000 \
+                -e "GF_SECURITY_ADMIN_PASSWORD=admin" \
+                -e "GF_USERS_ALLOW_SIGN_UP=false" \
+                -v /tmp/pdfRoar/monitoring/grafana/provisioning:/etc/grafana/provisioning \
+                --add-host=host.docker.internal:host-gateway \
+                --restart unless-stopped \
+                grafana/grafana-oss:latest || true
+
               # Start Consolidated Backend Engine on port 8000
               cd /tmp/pdfRoar
               nohup uvicorn app_main:app --host 0.0.0.0 --port 8000 > /var/log/pdfroar-backend.log 2>&1 &
