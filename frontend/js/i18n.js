@@ -5,11 +5,12 @@
 const translations = {
   en: {
     title: "pdfRoar — Professional Cloud-Native PDF Platform",
-    subtitle: "Ultra-fast PDF merging, splitting, page extraction, clean text converter, and Word/Acrobat-style WYSIWYG editor.",
+    subtitle: "Ultra-fast PDF merging, splitting, clean text extraction, WYSIWYG editor, and PDF4QT Professional Native Studio.",
     tab_merge: "Merge Studio",
     tab_split: "Split & Extract Studio",
     tab_totext: "PDF to Text Converter",
-    tab_editor: "Word/Acrobat Interactive Editor",
+    tab_editor: "Word/Acrobat Editor",
+    tab_pdf4qt: "PDF4QT Professional Native Studio",
     dropzone_merge_title: "Drag & Drop multiple PDF files to Merge",
     dropzone_split_title: "Drag & Drop PDF file to Split or Extract Pages",
     dropzone_sub: "or click to browse from your device (Max 100MB per file)",
@@ -32,15 +33,18 @@ const translations = {
     tool_font: "Font Family",
     tool_size: "Size",
     tool_add_text: "+ Add Text",
-    tool_redact: "Redact Mask"
+    tool_redact: "Redact Mask",
+    pdf4qt_title: "PDF4QT Qt6 Professional Open-Source PDF Desktop Suite",
+    pdf4qt_desc: "Full-blown native C++/Qt6 PDF4QT application running live in your browser with zero latency via HTML5 noVNC stream."
   },
   es: {
     title: "pdfRoar — Plataforma Profesional de PDFs en la Nube",
-    subtitle: "Unión, separación de archivos, extracción de páginas, convertidor a texto y editor estilo Word/Acrobat.",
+    subtitle: "Unión, separación, convertidor a texto, editor interactivo y Suite Profesional Nativa PDF4QT.",
     tab_merge: "Estudio Unir PDFs",
     tab_split: "Estudio Separar y Extraer",
     tab_totext: "Convertidor PDF a Texto",
-    tab_editor: "Editor Interactivo Estilo Word/Acrobat",
+    tab_editor: "Editor Estilo Word/Acrobat",
+    tab_pdf4qt: "Suite Nativa Profesional PDF4QT",
     dropzone_merge_title: "Arrastra y suelta varios archivos PDF para Unir",
     dropzone_split_title: "Arrastra y suelta un archivo PDF para Separar o Extraer",
     dropzone_sub: "o haz clic para explorar desde tu dispositivo (Máx 100MB por archivo)",
@@ -63,15 +67,18 @@ const translations = {
     tool_font: "Tipo de Letra",
     tool_size: "Tamaño",
     tool_add_text: "+ Añadir Texto",
-    tool_redact: "Censurar/Redactar"
+    tool_redact: "Censurar/Redactar",
+    pdf4qt_title: "Suite de Escritorio Profesional PDF4QT (Qt6/C++)",
+    pdf4qt_desc: "Aplicación nativa completa de edición PDF4QT ejecutándose en tiempo real dentro del navegador vía noVNC HTML5."
   },
   fr: {
     title: "pdfRoar — Plateforme PDF Professionnelle Cloud-Native",
-    subtitle: "Fusion, division, extraction de pages, convertisseur texte et éditeur interactif style Word/Acrobat.",
+    subtitle: "Fusion, division, convertisseur texte, éditeur interactif et Suite Professionnelle Native PDF4QT.",
     tab_merge: "Studio Fusion PDF",
     tab_split: "Studio Division & Extraction",
     tab_totext: "Convertisseur PDF en Texte",
-    tab_editor: "Éditeur Interactif Word/Acrobat",
+    tab_editor: "Éditeur Word/Acrobat",
+    tab_pdf4qt: "Studio Natif Professionnel PDF4QT",
     dropzone_merge_title: "Glissez & déposez plusieurs fichiers PDF pour fusionner",
     dropzone_split_title: "Glissez & déposez un fichier PDF pour diviser",
     dropzone_sub: "ou cliquez pour parcourir depuis votre appareil (Max 100MB)",
@@ -94,15 +101,18 @@ const translations = {
     tool_font: "Police",
     tool_size: "Taille",
     tool_add_text: "+ Ajouter Texte",
-    tool_redact: "Masquer/Censurer"
+    tool_redact: "Masquer/Censurer",
+    pdf4qt_title: "Suite PDF Professionnelle Native PDF4QT (Qt6)",
+    pdf4qt_desc: "Application de bureau native PDF4QT en direct dans votre navigateur via streaming noVNC HTML5."
   },
   de: {
     title: "pdfRoar — Professionelle Cloud-Native PDF Platform",
-    subtitle: "Zusammenfügen, Teilen, Seitenauswahl, Textkonvertierung und interaktiver Word/Acrobat-Editor.",
+    subtitle: "Zusammenfügen, Teilen, Konvertierung, Word/Acrobat-Editor und PDF4QT Professionelle Native Suite.",
     tab_merge: "Zusammenfügen Studio",
     tab_split: "Teilen & Extrahieren Studio",
     tab_totext: "PDF-zu-Text Konverter",
-    tab_editor: "Word/Acrobat Interaktiver Editor",
+    tab_editor: "Word/Acrobat Editor",
+    tab_pdf4qt: "PDF4QT Professionelle Native Suite",
     dropzone_merge_title: "Mehrere PDF-Dateien zum Zusammenfügen hierher ziehen",
     dropzone_split_title: "PDF-Datei zum Teilen hierher ziehen",
     dropzone_sub: "oder klicken zum Durchsuchen (Max 100MB pro Datei)",
@@ -125,7 +135,9 @@ const translations = {
     tool_font: "Schriftart",
     tool_size: "Größe",
     tool_add_text: "+ Text Hinzufügen",
-    tool_redact: "Schwärzen"
+    tool_redact: "Schwärzen",
+    pdf4qt_title: "PDF4QT Qt6 Professionelle PDF Desktop-Suite",
+    pdf4qt_desc: "Vollständige native C++/Qt6 PDF4QT-Anwendung live im Browser über HTML5 noVNC-Stream."
   }
 };
 

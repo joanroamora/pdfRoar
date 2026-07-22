@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>pdfRoar — Professional Cloud-Native PDF Platform</title>
-  <meta name="description" content="Ultra-fast PDF merging, splitting, page extraction, clean text converter, and Word/Acrobat-style WYSIWYG editor.">
+  <title>pdfRoar — Professional Cloud-Native PDF Platform & PDF4QT Studio</title>
+  <meta name="description" content="Ultra-fast PDF merging, splitting, clean text extraction, WYSIWYG editor, and PDF4QT Professional Native Studio.">
   
   <!-- CSS -->
   <link rel="stylesheet" href="css/styles.css">
@@ -53,10 +53,10 @@
   <main>
     <section class="hero">
       <h1 data-i18n="title">pdfRoar — Professional Cloud-Native PDF Platform</h1>
-      <p data-i18n="subtitle">Ultra-fast PDF merging, splitting, page extraction, clean text converter, and Word/Acrobat-style WYSIWYG editor.</p>
+      <p data-i18n="subtitle">Ultra-fast PDF merging, splitting, clean text extraction, WYSIWYG editor, and PDF4QT Professional Native Studio.</p>
     </section>
 
-    <!-- Navigation Tabs (Apple Style 4-Studio Control) -->
+    <!-- Navigation Tabs (Apple Style 5-Studio Control) -->
     <div class="tab-navigation">
       <div class="tab-bar">
         <button class="tab-btn active" data-tab="tab-merge">
@@ -73,7 +73,11 @@
         </button>
         <button class="tab-btn" data-tab="tab-editor">
           <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-          <span data-i18n="tab_editor">Word/Acrobat Interactive Editor</span>
+          <span data-i18n="tab_editor">Word/Acrobat Editor</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-pdf4qt">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          <span data-i18n="tab_pdf4qt">PDF4QT Native Studio</span>
         </button>
       </div>
     </div>
@@ -218,6 +222,25 @@
         </div>
       </div>
     </section>
+
+    <!-- TAB 5: PDF4QT Professional Native Web Studio -->
+    <section id="tab-pdf4qt" class="tab-content">
+      <div class="glass-card" style="padding: 1rem;">
+        <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 data-i18n="pdf4qt_title" style="font-size: 1.25rem; font-weight: 700; color: white;">PDF4QT Qt6 Professional Open-Source PDF Desktop Suite</h2>
+            <p data-i18n="pdf4qt_desc" style="font-size: 0.85rem; color: var(--text-muted);">Full-blown native C++/Qt6 PDF4QT application running live in your browser with zero latency via HTML5 noVNC stream.</p>
+          </div>
+          <button class="btn-secondary" onclick="document.getElementById('pdf4qt-frame').src = document.getElementById('pdf4qt-frame').src;">
+            🔄 Refresh Session
+          </button>
+        </div>
+
+        <div style="position: relative; width: 100%; height: 750px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--bg-glass-border); background: #000;">
+          <iframe id="pdf4qt-frame" src="http://127.0.0.1:6080" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- Toast Notification Container -->
@@ -225,7 +248,7 @@
 
   <!-- Footer -->
   <footer>
-    <p>&copy; 2026 pdfRoar. Single-Region AWS Cloud-Native Architecture. Developed with DevSecOps & LGTM Observability.</p>
+    <p>&copy; 2026 pdfRoar. Single-Region AWS Cloud-Native Architecture. Powered by PDF4QT Qt6 Open-Source Engine.</p>
   </footer>
 
   <!-- Scripts -->

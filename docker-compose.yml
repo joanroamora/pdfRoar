@@ -29,6 +29,14 @@ services:
     ports:
       - "8002:8002"
 
+  pdf4qt-studio:
+    build:
+      context: ./docker/pdf4qt
+    container_name: pdfroar-pdf4qt-studio
+    ports:
+      - "6080:6080"
+      - "5900:5900"
+
   gateway:
     build:
       context: ./gateway-nginx
@@ -39,3 +47,4 @@ services:
       - pdf-merge-split
       - pdf-to-text
       - pdf-editor
+      - pdf4qt-studio
