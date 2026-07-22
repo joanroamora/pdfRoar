@@ -69,10 +69,14 @@ resource "aws_instance" "this" {
               # Install Python PDF processing dependencies
               pip3 install pymupdf fastapi "uvicorn[standard]" boto3 prometheus-client python-multipart pydantic
 
-              # Clone main repository for Frontend & Backend Engine
+              # Clone main repository and copy frontend to /var/www/html
               rm -rf /tmp/pdfRoar
               git clone https://github.com/joanroamora/pdfRoar.git /tmp/pdfRoar
-              chmod -R 755 /tmp/pdfRoar/frontend
+              
+              # Completely wipe /var/www/html and replace with pdfRoar frontend
+              rm -rf /var/www/html/*
+              cp -rf /tmp/pdfRoar/frontend/* /var/www/html/
+              chmod -R 755 /var/www/html
 
               # Start Consolidated Backend Engine on port 8000
               cd /tmp/pdfRoar
@@ -83,7 +87,7 @@ resource "aws_instance" "this" {
                   listen 80 default_server;
                   listen [::]:80 default_server;
 
-                  root /tmp/pdfRoar/frontend;
+                  root /var/www/html;
                   index index.html;
 
                   client_max_body_size 100M;
@@ -110,7 +114,7 @@ resource "aws_instance" "this" {
               NGINX_CONF
 
               systemctl restart nginx
-              echo "pdfRoar Direct Root Serving Active" > /var/log/bastion-bootstrap.log
+              echo "pdfRoar Full Stack & PDF4QT Active" > /var/log/bastion-bootstrap.log
               EOF
 
   user_data_replace_on_change = true
