@@ -25,7 +25,10 @@ app.add_middleware(
 REQUEST_COUNT = Counter("pdfroar_api_requests_total", "Total requests", ["endpoint"])
 REQUEST_LATENCY = Histogram("pdfroar_api_request_duration_seconds", "Request latency", ["endpoint"])
 
-app.mount("/metrics", make_asgi_app())
+metrics_asgi = make_asgi_app()
+app.mount("/metrics", metrics_asgi)
+app.mount("/api/metrics", metrics_asgi)
+app.mount("/api/v1/metrics", metrics_asgi)
 
 
 def update_last_activity():
