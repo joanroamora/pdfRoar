@@ -104,8 +104,8 @@ resource "aws_instance" "this" {
                       try_files $uri $uri/ /index.html;
                   }
 
-                  location /api/ {
-                      proxy_pass http://127.0.0.1:8000/api/;
+                  location /api {
+                      proxy_pass http://127.0.0.1:8000;
                       proxy_set_header Host $host;
                       proxy_set_header X-Real-IP $remote_addr;
                       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -122,7 +122,7 @@ resource "aws_instance" "this" {
               NGINX_CONF
 
               systemctl restart nginx
-              echo "pdfRoar Full Stack & Anti-Cache Active" > /var/log/bastion-bootstrap.log
+              echo "pdfRoar Prometheus Metrics & Grafana Stack Active" > /var/log/bastion-bootstrap.log
               EOF
 
   user_data_replace_on_change = true
