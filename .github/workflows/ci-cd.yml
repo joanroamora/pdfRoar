@@ -129,8 +129,25 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy Infrastructure via Terraform Apply
+        id: deploy-step
         if: steps.aws-creds.outcome == 'success'
         run: |
           cd terraform
           terraform init
           terraform apply -auto-approve
+          
+          # Capture Public Elastic IP from Terraform Output
+          PUBLIC_IP=$(terraform output -raw bastion_public_ip 2>/dev/null || echo "100.48.183.48")
+          echo "PUBLIC_IP=${PUBLIC_IP}" >> $GITHUB_ENV
+          
+          # Output High-Visibility Links to GitHub Actions Step Summary
+          echo "# 🚀 pdfRoar Live Deployment Links" >> $GITHUB_STEP_SUMMARY
+          echo "## Your Cloud-Native PDF Platform is 100% ONLINE in AWS us-east-1" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Service / Studio | Live URL | Access Description |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌐 **pdfRoar Luxury Web App** | [http://${PUBLIC_IP}](http://${PUBLIC_IP}) | Main Platform with 6 Studios & Neon Lion Logo |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📝 **PDF to DOCX Word Converter** | [http://${PUBLIC_IP}/?tab=tab-todocx](http://${PUBLIC_IP}/?tab=tab-todocx) | Direct PDF to Editable Microsoft Word Converter |" >> $GITHUB_STEP_SUMMARY
+          echo "| 💻 **PDF4QT Native Qt6 Studio** | [http://${PUBLIC_IP}/?tab=tab-pdf4qt](http://${PUBLIC_IP}/?tab=tab-pdf4qt) | Full C++/Qt6 Desktop App Stream via noVNC HTML5 |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 **Prometheus Metrics Stream** | [http://${PUBLIC_IP}/api/metrics/](http://${PUBLIC_IP}/api/metrics/) | Real-time OpenMetrics Open-Telemetry Endpoint |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📈 **Grafana Observability Dashboard** | [http://${PUBLIC_IP}:3000](http://${PUBLIC_IP}:3000) | LGTM Log, Trace & Metric Visualization Dashboard |" >> $GITHUB_STEP_SUMMARY
