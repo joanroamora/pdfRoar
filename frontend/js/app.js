@@ -1,5 +1,5 @@
 /* ==========================================================================
-   pdfRoar - Main Application Controller & Word/Acrobat Editor UI Binders
+   pdfRoar - Main Application Controller & PDF4QT Stream Binder
    ========================================================================== */
 
 let selectedFilesMerge = [];
@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEditorDropzone();
   setupEditorToolbar();
   setupActionListeners();
+  setupPdf4QtFrame();
 });
 
 /* Tab Navigation */
@@ -31,8 +32,25 @@ function setupNavigationTabs() {
       tab.classList.add('active');
       const targetId = tab.getAttribute('data-tab');
       document.getElementById(targetId).classList.add('active');
+
+      if (targetId === 'tab-pdf4qt') {
+        setupPdf4QtFrame();
+      }
     });
   });
+}
+
+/* Dynamic Hostname Resolution for PDF4QT noVNC Stream */
+function setupPdf4QtFrame() {
+  const iframe = document.getElementById('pdf4qt-frame');
+  if (!iframe) return;
+
+  const currentHost = window.location.hostname;
+  const noVncUrl = `http://${currentHost}:6080/vnc.html?autoconnect=true&resize=scale`;
+
+  if (!iframe.src || iframe.src === 'about:blank' || iframe.src.includes('127.0.0.1')) {
+    iframe.src = noVncUrl;
+  }
 }
 
 /* Language Selection */

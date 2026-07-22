@@ -46,10 +46,22 @@ resource "aws_instance" "this" {
               #!/bin/bash
               set -e
               apt-get update -y
-              apt-get install -y apt-transport-https ca-certificates curl software-properties-common git ansible docker.io nginx python3-pip build-essential libmupdf-dev
+              apt-get install -y apt-transport-https ca-certificates curl software-properties-common git ansible docker.io nginx python3-pip build-essential libmupdf-dev xvfb fluxbox x11vnc websockify novnc
               systemctl enable docker nginx
               systemctl start docker nginx
               usermod -aG docker ubuntu
+
+              # Setup noVNC index
+              ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
+
+              # Start Xvfb, Fluxbox, x11vnc and websockify on port 6080
+              Xvfb :1 -screen 0 1600x900x24 &
+              sleep 1
+              DISPLAY=:1 fluxbox &
+              sleep 1
+              x11vnc -display :1 -nopw -listen localhost -xkb -noshm -forever &
+              sleep 1
+              websockify --web /usr/share/novnc 6080 localhost:5900 &
 
               # Install Python PDF processing dependencies
               pip3 install pymupdf fastapi "uvicorn[standard]" boto3 prometheus-client python-multipart pydantic
@@ -86,11 +98,19 @@ resource "aws_instance" "this" {
                       proxy_set_header X-Real-IP $remote_addr;
                       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                   }
+
+                  location /websockify {
+                      proxy_pass http://127.0.0.1:6080;
+                      proxy_http_version 1.1;
+                      proxy_set_header Upgrade $http_upgrade;
+                      proxy_set_header Connection "Upgrade";
+                      proxy_set_header Host $host;
+                  }
               }
               NGINX_CONF
 
               systemctl reload nginx
-              echo "pdfRoar Full Stack Active (Font & UI Split Update)" > /var/log/bastion-bootstrap.log
+              echo "pdfRoar Full Stack & PDF4QT noVNC Active" > /var/log/bastion-bootstrap.log
               EOF
 
   user_data_replace_on_change = true
