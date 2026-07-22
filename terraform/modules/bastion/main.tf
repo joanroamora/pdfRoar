@@ -46,7 +46,7 @@ resource "aws_instance" "this" {
               #!/bin/bash
               set -e
               apt-get update -y
-              apt-get install -y apt-transport-https ca-certificates curl software-properties-common git ansible docker.io nginx python3-pip build-essential libmupdf-dev xvfb fluxbox x11vnc websockify novnc
+              apt-get install -y apt-transport-https ca-certificates curl software-properties-common git ansible docker.io nginx python3-pip build-essential libmupdf-dev xvfb fluxbox x11vnc websockify novnc x11-xserver-utils xterm
               systemctl enable docker nginx
               systemctl start docker nginx
               usermod -aG docker ubuntu
@@ -58,6 +58,9 @@ resource "aws_instance" "this" {
               Xvfb :1 -screen 0 1600x900x24 &
               sleep 1
               DISPLAY=:1 fluxbox &
+              sleep 1
+              DISPLAY=:1 xsetroot -solid "#1a1d29" || true
+              DISPLAY=:1 xterm -geometry 120x35+50+50 -bg "#090a0f" -fg "#06b6d4" -title "PDF4QT Native Qt6 Studio Workspace" &
               sleep 1
               x11vnc -display :1 -nopw -listen localhost -xkb -noshm -forever &
               sleep 1
