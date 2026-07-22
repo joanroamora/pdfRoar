@@ -16,6 +16,14 @@ terraform.rc
 !.tfvars.example
 secrets.tfvars
 
+# Python gitignore
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+*.so
+
 # System files
 .DS_Store
 *.log
