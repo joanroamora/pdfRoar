@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: pdfroar-frontend
+    ports:
+      - "8080:80"
+
+  pdf-merge-split:
+    build:
+      context: ./services/pdf-merge-split
+    container_name: pdfroar-merge-split
+    ports:
+      - "8000:8000"
+
+  pdf-to-text:
+    build:
+      context: ./services/pdf-to-text
+    container_name: pdfroar-to-text
+    ports:
+      - "8001:8001"
+
+  pdf-editor:
+    build:
+      context: ./services/pdf-editor
+    container_name: pdfroar-editor
+    ports:
+      - "8002:8002"
+
+  gateway:
+    build:
+      context: ./gateway-nginx
+    container_name: pdfroar-gateway
+    ports:
+      - "80:80"
+    depends_on:
+      - pdf-merge-split
+      - pdf-to-text
+      - pdf-editor
