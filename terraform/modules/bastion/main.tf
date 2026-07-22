@@ -51,6 +51,11 @@ resource "aws_instance" "this" {
               systemctl start docker nginx
               usermod -aG docker ubuntu
 
+              # Remove default Ubuntu Nginx site config and HTML files completely
+              rm -f /etc/nginx/sites-enabled/default
+              rm -f /etc/nginx/sites-available/default
+              rm -rf /var/www/html/*
+
               # Setup noVNC index
               ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
 
@@ -69,12 +74,9 @@ resource "aws_instance" "this" {
               # Install Python PDF processing dependencies
               pip3 install pymupdf fastapi "uvicorn[standard]" boto3 prometheus-client python-multipart pydantic
 
-              # Clone main repository and copy frontend to /var/www/html
+              # Clone main repository and populate /var/www/html
               rm -rf /tmp/pdfRoar
               git clone https://github.com/joanroamora/pdfRoar.git /tmp/pdfRoar
-              
-              # Completely wipe /var/www/html and replace with pdfRoar frontend
-              rm -rf /var/www/html/*
               cp -rf /tmp/pdfRoar/frontend/* /var/www/html/
               chmod -R 755 /var/www/html
 
@@ -82,7 +84,8 @@ resource "aws_instance" "this" {
               cd /tmp/pdfRoar
               nohup uvicorn app_main:app --host 0.0.0.0 --port 8000 > /var/log/pdfroar-backend.log 2>&1 &
 
-              cat << 'NGINX_CONF' > /etc/nginx/sites-available/default
+              # Create dedicated pdfRoar Nginx site config
+              cat << 'NGINX_CONF' > /etc/nginx/conf.d/pdfroar.conf
               server {
                   listen 80 default_server;
                   listen [::]:80 default_server;
@@ -114,7 +117,7 @@ resource "aws_instance" "this" {
               NGINX_CONF
 
               systemctl restart nginx
-              echo "pdfRoar Full Stack & PDF4QT Active" > /var/log/bastion-bootstrap.log
+              echo "pdfRoar Dedicated Nginx Active" > /var/log/bastion-bootstrap.log
               EOF
 
   user_data_replace_on_change = true
