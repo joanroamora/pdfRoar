@@ -3,18 +3,17 @@ all:
     bastion:
       hosts:
         bastion-host:
-          ansible_host: 127.0.0.1
-          ansible_connection: local
+          ansible_host: 18.234.1.206
 
     k3s_cluster:
       hosts:
         k3s-master:
-          ansible_host: 10.0.10.15
+          ansible_host: 10.0.10.191
 
     pdf_worker:
       hosts:
         worker-node:
-          ansible_host: 10.0.20.25
+          ansible_host: 10.0.20.129
 
   vars:
     ansible_user: ubuntu
