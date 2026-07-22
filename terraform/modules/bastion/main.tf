@@ -99,7 +99,7 @@ resource "aws_instance" "this" {
                       try_files $uri $uri/ /index.html;
                   }
 
-                  location /api/ {
+                  location /api {
                       proxy_pass http://127.0.0.1:8000;
                       proxy_set_header Host $host;
                       proxy_set_header X-Real-IP $remote_addr;
@@ -117,7 +117,7 @@ resource "aws_instance" "this" {
               NGINX_CONF
 
               systemctl restart nginx
-              echo "pdfRoar Dedicated Nginx Active" > /var/log/bastion-bootstrap.log
+              echo "pdfRoar PDF to DOCX & Full Stack Active" > /var/log/bastion-bootstrap.log
               EOF
 
   user_data_replace_on_change = true
