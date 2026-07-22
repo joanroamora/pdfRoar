@@ -71,8 +71,9 @@ resource "aws_instance" "this" {
               sleep 1
               websockify --web /usr/share/novnc 6080 localhost:5900 &
 
-              # Install Python PDF processing dependencies
-              pip3 install pymupdf fastapi "uvicorn[standard]" boto3 prometheus-client python-multipart pydantic
+              # Install Python PDF & DOCX processing dependencies synchronously
+              pip3 install --upgrade pip
+              pip3 install pymupdf fastapi "uvicorn[standard]" boto3 prometheus-client python-multipart pydantic python-docx pdf2docx
 
               # Clone main repository and populate /var/www/html
               rm -rf /tmp/pdfRoar
@@ -117,7 +118,7 @@ resource "aws_instance" "this" {
               NGINX_CONF
 
               systemctl restart nginx
-              echo "pdfRoar PDF to DOCX & Full Stack Active" > /var/log/bastion-bootstrap.log
+              echo "pdfRoar Full Stack & DOCX Engine Verified Active" > /var/log/bastion-bootstrap.log
               EOF
 
   user_data_replace_on_change = true
