@@ -257,14 +257,19 @@ async def replace_text(
             for page in pdf_doc:
                 text_instances = page.search_for(search_text)
                 for inst in text_instances:
-                    # Redact old text
+                    orig_height = inst.height
+                    fontsize = max(8.0, orig_height * 0.82)
+                    
+                    # Redact old text area cleanly
                     page.add_redact_annot(inst, fill=(1, 1, 1))
                     page.apply_redactions()
-                    # Insert replacement text at origin coordinate
+                    
+                    # Re-insert replacement text matching original font size and baseline
                     page.insert_text(
-                        fitz.Point(inst.x0, inst.y1 - 2),
+                        fitz.Point(inst.x0, inst.y1 - (orig_height * 0.15)),
                         replace_text,
-                        fontsize=11,
+                        fontsize=fontsize,
+                        fontname="helv",
                         color=(0, 0, 0)
                     )
 

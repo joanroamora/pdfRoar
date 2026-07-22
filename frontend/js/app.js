@@ -3,6 +3,7 @@
    ========================================================================== */
 
 let selectedFilesMerge = [];
+let selectedFileSplit = null;
 let selectedFileText = null;
 let selectedFileEditor = null;
 
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupNavigationTabs();
   setupLanguageSelector();
   setupMergeDropzone();
+  setupSplitDropzone();
   setupTextDropzone();
   setupEditorDropzone();
   setupEditorToolbar();
@@ -129,7 +131,7 @@ function setupEditorToolbar() {
   });
 }
 
-/* 1. Merge & Split Dropzone */
+/* 1. Dedicated Merge Studio Dropzone */
 function setupMergeDropzone() {
   const dropzone = document.getElementById('dropzone-merge');
   const fileInput = document.getElementById('input-merge-files');
@@ -191,7 +193,24 @@ function setupMergeDropzone() {
   };
 }
 
-/* 2. PDF to Text Dropzone */
+/* 2. Dedicated Split & Extract Studio Dropzone */
+function setupSplitDropzone() {
+  const dropzone = document.getElementById('dropzone-split');
+  const fileInput = document.getElementById('input-split-file');
+  const nameLabel = document.getElementById('selected-split-filename');
+
+  if (!dropzone || !fileInput) return;
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      selectedFileSplit = e.target.files[0];
+      nameLabel.textContent = `Selected: ${selectedFileSplit.name}`;
+    }
+  });
+}
+
+/* 3. PDF to Text Dropzone */
 function setupTextDropzone() {
   const dropzone = document.getElementById('dropzone-text');
   const fileInput = document.getElementById('input-text-file');
@@ -208,7 +227,7 @@ function setupTextDropzone() {
   });
 }
 
-/* 3. Acrobat/Word Editor Dropzone */
+/* 4. Acrobat/Word Editor Dropzone */
 function setupEditorDropzone() {
   const dropzone = document.getElementById('dropzone-editor');
   const fileInput = document.getElementById('input-editor-file');
@@ -247,8 +266,8 @@ function setupActionListeners() {
 
   /* Split Action */
   document.getElementById('btn-split-action')?.addEventListener('click', async () => {
-    if (selectedFilesMerge.length === 0) {
-      showToast('Please select a PDF file to split.', 'error');
+    if (!selectedFileSplit) {
+      showToast('Please select a PDF file to split in the Split Studio.', 'error');
       return;
     }
     const startPage = parseInt(document.getElementById('split-start-page').value) || 1;
@@ -256,7 +275,7 @@ function setupActionListeners() {
 
     try {
       showToast('Splitting PDF...', 'info');
-      const blob = await splitPdfApi(selectedFilesMerge[0], startPage, endPage);
+      const blob = await splitPdfApi(selectedFileSplit, startPage, endPage);
       downloadBlob(blob, `split_p${startPage}_p${endPage || 'end'}.pdf`);
       showToast('PDF split successfully!', 'success');
     } catch (err) {
@@ -266,8 +285,8 @@ function setupActionListeners() {
 
   /* Extract Pages Action */
   document.getElementById('btn-extract-action')?.addEventListener('click', async () => {
-    if (selectedFilesMerge.length === 0) {
-      showToast('Please select a PDF file.', 'error');
+    if (!selectedFileSplit) {
+      showToast('Please select a PDF file in the Split & Extract Studio.', 'error');
       return;
     }
     const pagesStr = document.getElementById('extract-pages-input').value;
@@ -278,7 +297,7 @@ function setupActionListeners() {
 
     try {
       showToast('Extracting pages...', 'info');
-      const blob = await extractPagesApi(selectedFilesMerge[0], pagesStr);
+      const blob = await extractPagesApi(selectedFileSplit, pagesStr);
       downloadBlob(blob, 'extracted_pages.pdf');
       showToast('Pages extracted successfully!', 'success');
     } catch (err) {
@@ -326,8 +345,7 @@ function setupActionListeners() {
       return;
     }
 
-    // Collect modified text nodes
-    const modifiedNodes = document.querySelectorAll('.editable-text-node[data-modified="true"]');
+    const modifiedNodes = document.querySelectorAll('.editable-text-node[data-modified="true"], .editable-text-node[data-new="true"]');
     if (modifiedNodes.length === 0) {
       showToast('No text modifications detected yet. Edit text on the canvas to save!', 'info');
       return;
@@ -335,7 +353,7 @@ function setupActionListeners() {
 
     try {
       const firstModified = modifiedNodes[0];
-      const origText = firstModified.getAttribute('data-original-text');
+      const origText = firstModified.getAttribute('data-original-text') || firstModified.innerText;
       const newText = firstModified.innerText;
 
       showToast('Waking PDF Worker Engine & compiling modified PDF...', 'info');
