@@ -43,15 +43,15 @@ function setupNavigationTabs() {
 }
 
 /* Dynamic Hostname Resolution for PDF4QT noVNC Stream */
-function setupPdf4QtFrame() {
+function setupPdf4QtFrame(forceReload = false) {
   const iframe = document.getElementById('pdf4qt-frame');
   if (!iframe) return;
 
   const currentHost = window.location.hostname;
   const portSuffix = window.location.port ? `:${window.location.port}` : '';
-  const noVncUrl = `${window.location.protocol}//${currentHost}${portSuffix}/novnc/vnc.html?autoconnect=true&resize=scale`;
+  const noVncUrl = `${window.location.protocol}//${currentHost}${portSuffix}/novnc/vnc.html?autoconnect=true&resize=scale&path=websockify`;
 
-  if (!iframe.src || iframe.src === 'about:blank' || iframe.src.includes('127.0.0.1')) {
+  if (forceReload || !iframe.src || iframe.src === 'about:blank' || iframe.src.includes('127.0.0.1') || iframe.src === window.location.href) {
     iframe.src = noVncUrl;
   }
 }
