@@ -26,6 +26,17 @@ provider "aws" {
   }
 }
 
+# --- SAFETY GUARD PRECONDITION LOCK ---
+# Prevents accidental cloud deployments and charges in staging/prod multi-region environments
+resource "terraform_data" "safety_guard" {
+  lifecycle {
+    precondition {
+      condition     = var.enable_deployment == true && var.launch_safety_lock == false
+      error_message = "SAFETY LOCK ENGAGED: Multi-region deployment for environment '${var.environment}' in region '${var.aws_region}' is currently LOCKED to prevent unexpected AWS cloud charges. Set 'enable_deployment = true' and 'launch_safety_lock = false' in tfvars to unlock."
+    }
+  }
+}
+
 # --- Module 1: VPC ---
 module "vpc" {
   source = "./modules/vpc"

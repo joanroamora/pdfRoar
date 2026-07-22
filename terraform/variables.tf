@@ -1,5 +1,5 @@
 variable "aws_region" {
-  description = "AWS region to deploy resources in"
+  description = "AWS region to deploy resources in (us-east-1 for dev, us-east-2 for staging, us-west-2 for prod)"
   type        = string
   default     = "us-east-1"
 }
@@ -13,7 +13,19 @@ variable "project_name" {
 variable "environment" {
   description = "Deployment environment (dev, staging, prod)"
   type        = string
-  default     = "prod"
+  default     = "dev"
+}
+
+variable "enable_deployment" {
+  description = "Flag to enable resource provisioning for the environment"
+  type        = bool
+  default     = true
+}
+
+variable "launch_safety_lock" {
+  description = "Safety lock flag to prevent accidental provisioning in non-dev multi-region environments (staging/prod)"
+  type        = bool
+  default     = false
 }
 
 variable "vpc_cidr" {
@@ -88,6 +100,6 @@ variable "tags" {
   default = {
     Project      = "pdfRoar"
     ManagedBy    = "Terraform"
-    Architecture = "CloudNative-CostOptimized"
+    Architecture = "MultiEnvironment-CostOptimized"
   }
 }

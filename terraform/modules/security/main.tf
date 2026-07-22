@@ -15,7 +15,7 @@ locals {
 # ==========================================
 
 resource "aws_iam_role" "ec2_role" {
-  name = "${local.name_prefix}-ec2-role"
+  name_prefix = "${local.name_prefix}-role-"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -35,7 +35,7 @@ resource "aws_iam_role" "ec2_role" {
 
 # Policy to allow S3 access & EC2 self-start/stop for PDF Worker management
 resource "aws_iam_policy" "ec2_app_policy" {
-  name        = "${local.name_prefix}-ec2-policy"
+  name_prefix = "${local.name_prefix}-policy-"
   description = "Permissions for EC2 instances to access S3 buckets and manage EC2 Worker power state"
 
   policy = jsonencode({
@@ -80,8 +80,8 @@ resource "aws_iam_role_policy_attachment" "ec2_policy_attach" {
 }
 
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
-  name = "${local.name_prefix}-instance-profile"
-  role = aws_iam_role.ec2_role.name
+  name_prefix = "${local.name_prefix}-profile-"
+  role        = aws_iam_role.ec2_role.name
 
   tags = local.common_tags
 }
