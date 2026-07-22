@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>pdfRoar — Professional Cloud-Native PDF Platform & PDF4QT Studio</title>
-  <meta name="description" content="Ultra-fast PDF merging, splitting, clean text extraction, WYSIWYG editor, and PDF4QT Professional Native Studio.">
+  <title>pdfRoar — Professional Cloud-Native PDF Platform & PDF to Word Converter</title>
+  <meta name="description" content="Ultra-fast PDF merging, splitting, clean text extraction, PDF to DOCX Word converter, WYSIWYG editor, and PDF4QT Professional Native Studio.">
   
   <!-- CSS -->
   <link rel="stylesheet" href="css/styles.css">
@@ -53,10 +53,10 @@
   <main>
     <section class="hero">
       <h1 data-i18n="title">pdfRoar — Professional Cloud-Native PDF Platform</h1>
-      <p data-i18n="subtitle">Ultra-fast PDF merging, splitting, clean text extraction, WYSIWYG editor, and PDF4QT Professional Native Studio.</p>
+      <p data-i18n="subtitle">Ultra-fast PDF merging, splitting, clean text extraction, Word (.DOCX) converter, WYSIWYG editor, and PDF4QT Native Studio.</p>
     </section>
 
-    <!-- Navigation Tabs (Apple Style 5-Studio Control) -->
+    <!-- Navigation Tabs (Apple Style 6-Studio Control) -->
     <div class="tab-navigation">
       <div class="tab-bar">
         <button class="tab-btn active" data-tab="tab-merge">
@@ -65,11 +65,15 @@
         </button>
         <button class="tab-btn" data-tab="tab-split">
           <svg viewBox="0 0 24 24"><path d="M16 3h5v5"></path><path d="M8 21H3v-5"></path><path d="M21 3l-7.5 7.5"></path><path d="M3 21l7.5-7.5"></path></svg>
-          <span data-i18n="tab_split">Split & Extract Studio</span>
+          <span data-i18n="tab_split">Split & Extract</span>
         </button>
         <button class="tab-btn" data-tab="tab-totext">
           <svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>
-          <span data-i18n="tab_totext">PDF to Text Converter</span>
+          <span data-i18n="tab_totext">PDF to Text</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-todocx">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          <span data-i18n="tab_todocx">PDF to DOCX (Word)</span>
         </button>
         <button class="tab-btn" data-tab="tab-editor">
           <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
@@ -169,7 +173,27 @@
       </div>
     </section>
 
-    <!-- TAB 4: Word/Acrobat Interactive WYSIWYG Editor -->
+    <!-- TAB 4: PDF to DOCX Converter -->
+    <section id="tab-todocx" class="tab-content">
+      <div class="glass-card">
+        <div class="dropzone" id="dropzone-docx">
+          <div class="dropzone-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          </div>
+          <h3 data-i18n="dropzone_docx_title">Drag & Drop PDF file to Convert to Word (.DOCX)</h3>
+          <p id="selected-docx-filename" style="color: var(--accent-cyan); font-weight: 500;"></p>
+          <input type="file" id="input-docx-file" accept=".pdf" style="display: none;">
+        </div>
+
+        <div style="margin-top: 1.25rem; display: flex; gap: 1rem; align-items: center; justify-content: flex-end;">
+          <button class="btn-primary" id="btn-todocx-action">
+            <span data-i18n="btn_todocx">Convert to Word (.DOCX)</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: Word/Acrobat Interactive WYSIWYG Editor -->
     <section id="tab-editor" class="tab-content">
       <div class="glass-card">
         <div class="dropzone" id="dropzone-editor">
@@ -223,7 +247,7 @@
       </div>
     </section>
 
-    <!-- TAB 5: PDF4QT Professional Native Web Studio -->
+    <!-- TAB 6: PDF4QT Professional Native Web Studio -->
     <section id="tab-pdf4qt" class="tab-content">
       <div class="glass-card" style="padding: 1rem;">
         <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">

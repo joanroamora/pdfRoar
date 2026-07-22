@@ -203,6 +203,49 @@ async def pdf_to_text(
             raise HTTPException(status_code=500, detail=f"Error converting PDF to text: {str(e)}")
 
 
+@app.post("/api/v1/pdf/to-docx", summary="Convert PDF file to Microsoft Word (.docx)")
+async def pdf_to_docx(file: UploadFile = File(...)):
+    update_last_activity()
+    REQUEST_COUNT.labels(endpoint="to_docx").inc()
+    with REQUEST_LATENCY.labels(endpoint="to_docx").time():
+        try:
+            contents = await file.read()
+            pdf_doc = fitz.open(stream=contents, filetype="pdf")
+
+            try:
+                from docx import Document
+            except ImportError:
+                import subprocess, sys
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "python-docx"])
+                from docx import Document
+
+            docx_doc = Document()
+            docx_doc.add_heading(file.filename.replace('.pdf', ''), level=1)
+
+            for page_num in range(len(pdf_doc)):
+                page = pdf_doc[page_num]
+                text = page.get_text("text")
+                if text.strip():
+                    docx_doc.add_heading(f"Page {page_num + 1}", level=2)
+                    for paragraph in text.split("\n\n"):
+                        if paragraph.strip():
+                            docx_doc.add_paragraph(paragraph.strip())
+
+            pdf_doc.close()
+
+            output_stream = io.BytesIO()
+            docx_doc.save(output_stream)
+            output_stream.seek(0)
+
+            return StreamingResponse(
+                output_stream,
+                media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                headers={"Content-Disposition": f"attachment; filename={file.filename.replace('.pdf', '')}.docx"}
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error converting PDF to DOCX: {str(e)}")
+
+
 # 3. WYSIWYG ACROBAT PDF EDITOR
 @app.post("/api/v1/editor/blocks", summary="Extract text blocks with Acrobat-style coordinates")
 async def extract_text_blocks(file: UploadFile = File(...)):

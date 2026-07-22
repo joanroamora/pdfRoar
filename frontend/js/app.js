@@ -1,10 +1,11 @@
 /* ==========================================================================
-   pdfRoar - Main Application Controller & PDF4QT Stream Binder
+   pdfRoar - Main Application Controller & PDF to DOCX Studio Binders
    ========================================================================== */
 
 let selectedFilesMerge = [];
 let selectedFileSplit = null;
 let selectedFileText = null;
+let selectedFileDocx = null;
 let selectedFileEditor = null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupMergeDropzone();
   setupSplitDropzone();
   setupTextDropzone();
+  setupDocxDropzone();
   setupEditorDropzone();
   setupEditorToolbar();
   setupActionListeners();
@@ -245,7 +247,24 @@ function setupTextDropzone() {
   });
 }
 
-/* 4. Acrobat/Word Editor Dropzone */
+/* 4. PDF to DOCX Dropzone */
+function setupDocxDropzone() {
+  const dropzone = document.getElementById('dropzone-docx');
+  const fileInput = document.getElementById('input-docx-file');
+  const nameLabel = document.getElementById('selected-docx-filename');
+
+  if (!dropzone) return;
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      selectedFileDocx = e.target.files[0];
+      nameLabel.textContent = `Selected: ${selectedFileDocx.name}`;
+    }
+  });
+}
+
+/* 5. Acrobat/Word Editor Dropzone */
 function setupEditorDropzone() {
   const dropzone = document.getElementById('dropzone-editor');
   const fileInput = document.getElementById('input-editor-file');
@@ -342,6 +361,23 @@ function setupActionListeners() {
       
       textOutputBox.textContent = textContent;
       showToast('Text extracted successfully!', 'success');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  });
+
+  /* PDF to DOCX Action */
+  document.getElementById('btn-todocx-action')?.addEventListener('click', async () => {
+    if (!selectedFileDocx) {
+      showToast('Please select a PDF file in the PDF to DOCX tab.', 'error');
+      return;
+    }
+
+    try {
+      showToast('Converting PDF to Microsoft Word (.DOCX)...', 'info');
+      const blob = await pdfToDocxApi(selectedFileDocx);
+      downloadBlob(blob, selectedFileDocx.name.replace('.pdf', '') + '.docx');
+      showToast('PDF converted to Word (.DOCX) successfully!', 'success');
     } catch (err) {
       showToast(err.message, 'error');
     }

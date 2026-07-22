@@ -83,6 +83,19 @@ async function pdfToTextApi(file, formatOutput = 'json') {
   return await response.json();
 }
 
+async function pdfToDocxApi(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${API_BASE}/pdf/to-docx`, {
+    method: 'POST',
+    body: formData
+  });
+
+  await handleApiResponse(response, 'Failed to convert PDF to DOCX');
+  return await response.blob();
+}
+
 async function extractEditorBlocksApi(file) {
   const formData = new FormData();
   formData.append('file', file);
